@@ -177,7 +177,7 @@ class iomadoidcclient {
         // IOMAD
         require_once($CFG->dirroot . '/local/iomad/lib/company.php');
         $companyid = iomad::get_my_companyid(context_system::instance(), false);
-        if (!empty($companyid)) {
+        if (!empty($companyid) && $companyid > 0) {
             $postfix = "_$companyid";
         } else {
             $postfix = "";
@@ -195,7 +195,7 @@ class iomadoidcclient {
             'redirect_uri' => $this->redirecturi
         ];
 
-        if (get_config('auth_iomadoidc', 'idptype' . $postfix) != AUTH_IOMADoIDC_IDP_TYPE_MICROSOFT) {
+        if (get_config('auth_iomadoidc', 'idptype' . $postfix) != AUTH_IOMADOIDC_IDP_TYPE_MICROSOFT) {
             $params['resource'] = $this->tokenresource;
         }
 
@@ -302,7 +302,7 @@ class iomadoidcclient {
         // IOMAD
         require_once($CFG->dirroot . '/local/iomad/lib/company.php');
         $companyid = iomad::get_my_companyid(context_system::instance(), false);
-        if (!empty($companyid)) {
+        if (!empty($companyid) && $companyid > 0) {
             $postfix = "_$companyid";
         } else {
             $postfix = "";
@@ -350,7 +350,7 @@ class iomadoidcclient {
         // IOMAD
         require_once($CFG->dirroot . '/local/iomad/lib/company.php');
         $companyid = iomad::get_my_companyid(context_system::instance(), false);
-        if (!empty($companyid)) {
+        if (!empty($companyid) && $companyid > 0) {
             $postfix = "_$companyid";
         } else {
             $postfix = "";
@@ -391,7 +391,7 @@ class iomadoidcclient {
         // IOMAD
         require_once($CFG->dirroot . '/local/iomad/lib/company.php');
         $companyid = iomad::get_my_companyid(context_system::instance(), false);
-        if (!empty($companyid)) {
+        if (!empty($companyid) && $companyid > 0) {
             $postfix = "_$companyid";
         } else {
             $postfix = "";
@@ -429,11 +429,15 @@ class iomadoidcclient {
         // IOMAD
         require_once($CFG->dirroot . '/local/iomad/lib/company.php');
         $companyid = iomad::get_my_companyid(context_system::instance(), false);
-        if (!empty($companyid)) {
+        if (!empty($companyid) && $companyid > 0) {
             $postfix = "_$companyid";
         } else {
             $postfix = "";
         }
+
+        $clientid = "clientid" . $postfix;
+        $clientprivatekey = "clientprivatekey" . $postfix;
+        $tokenendpoint = "tokenendpoint" . $postfix;
 
         $jwt = new jwt();
         $authiomadoidcconfig = get_config('auth_iomadoidc');
@@ -443,15 +447,15 @@ class iomadoidcclient {
         $x5t = base64_encode(hex2bin($sh1hash));
         $jwt->set_header(['alg' => 'RS256', 'typ' => 'JWT', 'x5t' => $x5t]);
         $jwt->set_claims([
-            'aud' => $authiomadoidcconfig->tokenendpoint,
+            'aud' => $authiomadoidcconfig->$tokenendpoint,
             'exp' => strtotime('+10min'),
-            'iss' => $authiomadoidcconfig->clientid,
+            'iss' => $authiomadoidcconfig->$clientid,
             'jti' => bin2hex(openssl_random_pseudo_bytes(16)),
             'nbf' => time(),
-            'sub' => $authiomadoidcconfig->clientid,
+            'sub' => $authiomadoidcconfig->$clientid,
             'iat' => time(),
         ]);
 
-        return $jwt->assert_token($authiomadoidcconfig->clientprivatekey);
+        return $jwt->assert_token($authiomadoidcconfig->$clientprivatekey);
     }
 }
