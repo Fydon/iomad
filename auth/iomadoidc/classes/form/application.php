@@ -43,6 +43,19 @@ class application extends moodleform {
      * @return void
      */
     protected function definition() {
+        global $CFG;
+
+        // IOMAD
+        require_once($CFG->dirroot . '/local/iomad/lib/company.php');
+        $companyid = \iomad::get_my_companyid(\context_system::instance(), false);
+        if (!empty($companyid) && $companyid > 0) {
+            $postfix = "_$companyid";
+        } else {
+            $postfix = "";
+        }
+
+        $idptype = 'idptype' . $postfix;
+
         $mform =& $this->_form;
 
         // Basic settings header.
@@ -71,8 +84,8 @@ class application extends moodleform {
         $authmethodoptions = [
             AUTH_IOMADOIDC_AUTH_METHOD_SECRET => get_string('auth_method_secret', 'auth_iomadoidc'),
         ];
-        if (isset($this->_customdata['iomadoidcconfig']->idptype) &&
-            $this->_customdata['iomadoidcconfig']->idptype == AUTH_IOMADOIDC_IDP_TYPE_MICROSOFT) {
+        if (isset($this->_customdata['iomadoidcconfig']->$idptype) &&
+            $this->_customdata['iomadoidcconfig']->$idptype == AUTH_IOMADOIDC_IDP_TYPE_MICROSOFT) {
             $authmethodoptions[AUTH_IOMADOIDC_AUTH_METHOD_CERTIFICATE] = get_string('auth_method_certificate', 'auth_iomadoidc');
         }
         $mform->addElement('select', 'clientauthmethod', auth_iomadoidc_config_name_in_form('clientauthmethod'), $authmethodoptions);
